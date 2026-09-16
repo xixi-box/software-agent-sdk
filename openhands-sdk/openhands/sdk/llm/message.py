@@ -355,6 +355,9 @@ class Message(BaseModel):
                 thinking_blocks_dicts.append(thinking_dict)
 
         for item in self.content:
+            if isinstance(item, TextContent) and item.text.strip() == "":
+                continue
+
             # All content types now return list[dict[str, Any]]
             item_dicts = item.to_llm_dict()
 
@@ -379,7 +382,10 @@ class Message(BaseModel):
                 # Add non-image content (TextContent, etc.)
                 content.extend(item_dicts)
 
-        message_dict: dict[str, Any] = {"content": content, "role": self.role}
+        message_dict: dict[str, Any] = {
+            "content": content if content else "",
+            "role": self.role,
+        }
         if role_tool_with_prompt_caching:
             message_dict["cache_control"] = {"type": "ephemeral"}
 
